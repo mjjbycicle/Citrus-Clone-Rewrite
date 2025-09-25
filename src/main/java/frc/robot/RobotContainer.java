@@ -1,57 +1,112 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.DriveCommands;
+import frc.robot.constants.Constants;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.drive.generated.TunerConstants;
 import frc.robot.subsystems.pivot.PivotConstants;
-import frc.robot.subsystems.pivot.PivotSubsystem;
-import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
-import frc.robot.subsystems.swerve.generated.TunerConstants;
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 public class RobotContainer extends LoggedRobot {
-    private double MaxSpeed =
-            TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate =
-            RotationsPerSecond.of(1.25)
-                    .in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final CommandXboxController controller = new CommandXboxController(0);
+    // Subsystems
+    private final Drive drive;
+    public final Pivot pivot = new Pivot();
+    private final Vision vision;
 
-    /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive =
-            new SwerveRequest.FieldCentric()
-                    .withDeadband(MaxSpeed * 0.1)
-                    .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-                    .withDriveRequestType(
-                            DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-    private final SwerveRequest.RobotCentric forwardStraight =
-            new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
-    private final Telemetry logger = new Telemetry(MaxSpeed);
-
-    private final CommandXboxController joystick = new CommandXboxController(0);
-
-    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-
-    /* Path follower */
-    private final SendableChooser<Command> autoChooser;
-
-    public final PivotSubsystem pivot = new PivotSubsystem();
+    // Dashboard inputs
+    private final LoggedDashboardChooser<Command> autoChooser;
 
     public RobotContainer() {
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
+
+        switch (Constants.currentMode) {
+            case REAL:
+                // Real robot, instantiate hardware IO implementations
+                drive =
+                        new Drive(
+                                new GyroIOPigeon2(),
+                                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                                new ModuleIOTalonFX(TunerConstants.BackRight));
+                vision =
+                        new Vision(
+                                drive::addVisionMeasurement,
+                                new VisionIOLimelight(camera0Name, drive::getRotation),
+                                new VisionIOLimelight(camera1Name, drive::getRotation));
+                break;
+
+            case SIM:
+                // Sim robot, instantiate physics sim IO implementations
+                drive =
+                        new Drive(
+                                new GyroIO() {
+                                },
+                                new ModuleIOSim(TunerConstants.FrontLeft),
+                                new ModuleIOSim(TunerConstants.FrontRight),
+                                new ModuleIOSim(TunerConstants.BackLeft),
+                                new ModuleIOSim(TunerConstants.BackRight));
+                vision =
+                        new Vision(
+                                drive::addVisionMeasurement,
+                                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+                break;
+
+            default:
+                // Replayed robot, disable IO implementations
+                drive =
+                        new Drive(
+                                new GyroIO() {
+                                },
+                                new ModuleIO() {
+                                },
+                                new ModuleIO() {
+                                },
+                                new ModuleIO() {
+                                },
+                                new ModuleIO() {
+                                });
+                vision = new Vision(drive::addVisionMeasurement, new VisionIO() {
+                }, new VisionIO() {
+                });
+                break;
+        }
+
+        // Set up auto routines
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+        // Set up SysId routines
+        autoChooser.addOption(
+                "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+        autoChooser.addOption(
+                "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)",
+                drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)",
+                drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption(
+                "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         configureBindings();
 
@@ -61,66 +116,45 @@ public class RobotContainer extends LoggedRobot {
 
     private void configureBindings() {
         //        configureSwerveBindings();
-        joystick.a().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
-        joystick.b().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
+        controller.a().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
+        controller.b().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
     }
 
     private void configureSwerveBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(
-                        () ->
-                                drive
-                                        .withVelocityX(
-                                                -joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                                        .withVelocityY(
-                                                -joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                                        .withRotationalRate(
-                                                joystick.getRightX()
-                                                        * MaxAngularRate) // Drive counterclockwise with negative X (left)
-                ));
+        // Default command, normal field-relative drive
+        drive.setDefaultCommand(
+                DriveCommands.joystickDrive(
+                        drive,
+                        () -> -controller.getLeftY(),
+                        () -> -controller.getLeftX(),
+                        () -> -controller.getRightX()));
 
-        // Idle while the robot is disabled. This ensures the configured
-        // neutral mode is applied to the drive motors while disabled.
-        final var idle = new SwerveRequest.Idle();
-        RobotModeTriggers.disabled()
-                .whileTrue(drivetrain.applyRequest(() -> idle).ignoringDisable(true));
+        // Lock to 0° when A button is held
+        controller
+                .a()
+                .whileTrue(
+                        DriveCommands.joystickDriveAtAngle(
+                                drive,
+                                () -> -controller.getLeftY(),
+                                () -> -controller.getLeftX(),
+                                Rotation2d::new));
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick
+        // Switch to an X pattern when X button is pressed
+        controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+
+        // Reset gyro to 0° when B button is pressed
+        controller
                 .b()
-                .whileTrue(
-                        drivetrain.applyRequest(
-                                () ->
-                                        point.withModuleDirection(
-                                                new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-
-        joystick
-                .pov(0)
-                .whileTrue(
-                        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
-        joystick
-                .pov(180)
-                .whileTrue(
-                        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
-
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-        // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.resetGyroCommand());
-
-        drivetrain.registerTelemetry(logger::telemeterize);
+                .onTrue(
+                        Commands.runOnce(
+                                        () ->
+                                                drive.setPose(
+                                                        new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                                        drive)
+                                .ignoringDisable(true));
     }
 
     public Command getAutonomousCommand() {
-        /* Run the path selected from the auto chooser */
-        return autoChooser.getSelected();
+        return autoChooser.get();
     }
 }

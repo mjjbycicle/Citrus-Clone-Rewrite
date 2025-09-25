@@ -1,7 +1,5 @@
 package frc.robot.subsystems.pivot;
 
-import static edu.wpi.first.units.Units.Rotations;
-
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.spark.SparkBase;
@@ -14,14 +12,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.TunableProfiledPIDController;
 import lib.TunableTrapezoidProfile;
 
-public class PivotSubsystem extends SubsystemBase {
+import static edu.wpi.first.units.Units.Rotations;
+
+public class Pivot extends SubsystemBase {
     private final SparkMax pivot;
     private final CANcoder pivotEncoder;
     private final TunableProfiledPIDController pidController;
 
     private PivotConstants.PivotStates pivotState = PivotConstants.PivotStates.IDLE;
 
-    public PivotSubsystem() {
+    public Pivot() {
         SparkMax rightPivot =
                 new SparkMax(PivotConstants.IDs.RightPivotID, SparkLowLevel.MotorType.kBrushless);
         pivot = new SparkMax(PivotConstants.IDs.LeftPivotID, SparkLowLevel.MotorType.kBrushless);

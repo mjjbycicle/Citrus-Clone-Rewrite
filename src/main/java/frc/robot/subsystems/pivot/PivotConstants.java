@@ -1,5 +1,6 @@
 package frc.robot.subsystems.pivot;
 
+import edu.wpi.first.math.util.Units;
 import lib.TunableNumber;
 
 public class PivotConstants {
@@ -26,12 +27,31 @@ public class PivotConstants {
 
     public enum PivotStates {
         IDLE(0.6),
-        UP(0.3);
+        UP(0.3),
+        BACK(0.05);
 
         public final double position;
 
         PivotStates(double position) {
             this.position = position;
         }
+        
+        public static double getSimPosition(double currentPosition) {
+            double simUp = Units.degreesToRadians(90);
+            double simDown = Units.degreesToRadians(-5);
+            return (IDLE.position - currentPosition) / (IDLE.position - UP.position) 
+                    * (simUp - simDown) + simDown;
+        }
+        
+        public static double fromSimPosition(double currentPosition) {
+            double simUp = Units.degreesToRadians(90);
+            double simDown = Units.degreesToRadians(-5);
+            return IDLE.position - (currentPosition - simDown) / (simUp - simDown)
+                    * (IDLE.position - UP.position);
+        }
     }
+  
+    public static final double gearing = 576;
+    public static final double length = Units.inchesToMeters(25);
+    public static final double mass = Units.lbsToKilograms(25);
 }
