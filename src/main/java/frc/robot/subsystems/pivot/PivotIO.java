@@ -17,7 +17,11 @@ public interface PivotIO {
     default void updateInputs(PivotIOInputs inputs) {}
     
     default void runVolts(double volts) {}
-    
+
+    default void setPID(double p, double i, double d) {}
+
+    default void runSetpoint(double setpointRads, double feedforward) {}
+
     default void setBrakeMode(boolean enabled) {}
     
     default void stop() {}

@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.constants.Constants;
 
 import static frc.robot.subsystems.pivot.PivotConstants.*;
+import static frc.robot.subsystems.pivot.PivotConstants.PIDs.*;
 
 public class PivotIOSim implements PivotIO {
     private static final double autoStartAngle = Units.degreesToRadians(80.0);
@@ -26,23 +27,15 @@ public class PivotIOSim implements PivotIO {
 
     private final PIDController controller;
     private double appliedVoltage = 0.0;
-    private double positionOffset = 0.0;
-
-    private boolean controllerNeedsReset = false;
-    private boolean closedLoop = true;
     private boolean wasNotAuto = true;
 
     public PivotIOSim() {
-        controller = new PIDController(0.0, 0.0, 0.0);
+        controller = new PIDController(pivotKP.getAsDouble(), pivotKI.getAsDouble(), pivotKD.getAsDouble());
         sim.setState(0.0, 0.0);
     }
 
     @Override
     public void updateInputs(PivotIOInputs inputs) {
-        if (DriverStation.isDisabled()) {
-            controllerNeedsReset = true;
-        }
-
         // Reset at start of auto
         if (wasNotAuto && DriverStation.isAutonomousEnabled()) {
             sim.setState(autoStartAngle, 0.0);
@@ -64,9 +57,18 @@ public class PivotIOSim implements PivotIO {
 
     @Override
     public void runVolts(double volts) {
-        closedLoop = false;
         appliedVoltage = MathUtil.clamp(volts, -12.0, 12.0);
         sim.setInputVoltage(appliedVoltage);
+    }
+
+    @Override
+    public void runSetpoint(double setpointRads, double feedforward) {
+        runVolts(controller.calculate(sim.getAngleRads(), setpointRads) + feedforward);
+    }
+
+    @Override
+    public void setPID(double p, double i, double d) {
+        controller.setPID(p, i, d);
     }
 
     @Override

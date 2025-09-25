@@ -1,5 +1,6 @@
 package frc.robot.subsystems.pivot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import lib.TunableNumber;
 
@@ -54,4 +55,6 @@ public class PivotConstants {
     public static final double gearing = 576;
     public static final double length = Units.inchesToMeters(25);
     public static final double mass = Units.lbsToKilograms(25);
+
+    public static final Translation2d armOrigin = new Translation2d(-0.238, 0.298);
 }
