@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -13,11 +11,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.constants.util.JoystickAngleUtil;
 import frc.robot.subsystems.pivot.PivotConstants;
 import frc.robot.subsystems.pivot.PivotSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.swerve.generated.TunerConstants;
 import org.littletonrobotics.junction.LoggedRobot;
+
+import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer extends LoggedRobot {
     private double MaxSpeed =
@@ -61,8 +62,15 @@ public class RobotContainer extends LoggedRobot {
 
     private void configureBindings() {
         //        configureSwerveBindings();
-        joystick.a().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
-        joystick.b().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
+        joystick.povLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
+        joystick.povUp().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
+        joystick.povRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.BACK));
+        joystick.povUpLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_FORWARD));
+        joystick.povUpRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_BACK));
+        PivotConstants.PivotStates.JOYSTICK_LISTEN.setPositionSupplier(
+                () -> JoystickAngleUtil.getEncoderAngle(joystick.getLeftX(), joystick.getLeftY())
+        );
+        joystick.y().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.JOYSTICK_LISTEN));
     }
 
     private void configureSwerveBindings() {
