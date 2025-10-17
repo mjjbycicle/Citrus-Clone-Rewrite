@@ -1,6 +1,7 @@
 package lib;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.Constants;
 import java.util.function.DoubleSupplier;
 
@@ -13,6 +14,7 @@ import java.util.function.DoubleSupplier;
 public class TunableNumber implements DoubleSupplier {
   private String key;
   private double defaultValue;
+  private double previousValue;
 
   /**
    * Create a new TunableNumber
@@ -21,6 +23,7 @@ public class TunableNumber implements DoubleSupplier {
    */
   public TunableNumber(String dashboardKey) {
     this.key = dashboardKey;
+    this.previousValue = Double.NaN;
   }
 
   /**
@@ -39,6 +42,7 @@ public class TunableNumber implements DoubleSupplier {
    */
   public void setDefault(double defaultValue) {
     this.defaultValue = defaultValue;
+    this.previousValue = defaultValue;
     if (Constants.tuningMode) {
       // This makes sure the data is on NetworkTables but will not change it
       SmartDashboard.putNumber(key, SmartDashboard.getNumber(key, defaultValue));
@@ -53,5 +57,12 @@ public class TunableNumber implements DoubleSupplier {
   @Override
   public double getAsDouble() {
     return Constants.tuningMode ? SmartDashboard.getNumber(key, defaultValue) : defaultValue;
+  }
+
+  public boolean hasChanged() {
+      double newValue = SmartDashboard.getNumber(key, defaultValue);
+      boolean res = newValue != previousValue;
+      previousValue = newValue;
+      return res;
   }
 }

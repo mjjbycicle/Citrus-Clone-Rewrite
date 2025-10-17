@@ -13,14 +13,14 @@ public class PivotConstants {
     }
 
     public static class PIDs {
-        public static final TunableNumber pivotKP = new TunableNumber("Pivot Kp");
-        public static final TunableNumber pivotKI = new TunableNumber("Pivot Ki");
-        public static final TunableNumber pivotKD = new TunableNumber("Pivot Kd");
-        public static final TunableNumber pivotVelocity = new TunableNumber("Pivot Velocity");
-        public static final TunableNumber pivotAcceleration = new TunableNumber("Pivot Acceleration");
-        public static final TunableNumber pivotKS = new TunableNumber("Pivot KS");
-        public static final TunableNumber pivotKV = new TunableNumber("Pivot KV");
-        public static final TunableNumber pivotKG = new TunableNumber("Pivot KG");
+        public static final TunableNumber pivotKP = new TunableNumber("Pivot/Pivot Kp");
+        public static final TunableNumber pivotKI = new TunableNumber("Pivot/Pivot Ki");
+        public static final TunableNumber pivotKD = new TunableNumber("Pivot/Pivot Kd");
+        public static final TunableNumber pivotVelocity = new TunableNumber("Pivot/Pivot Velocity");
+        public static final TunableNumber pivotAcceleration = new TunableNumber("Pivot/Pivot Acceleration");
+        public static final TunableNumber pivotKS = new TunableNumber("Pivot/Pivot KS");
+        public static final TunableNumber pivotKV = new TunableNumber("Pivot/Pivot KV");
+        public static final TunableNumber pivotKG = new TunableNumber("Pivot/Pivot KG");
 
         static {
             pivotKP.setDefault(22);

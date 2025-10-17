@@ -11,14 +11,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.constants.util.JoystickAngleUtil;
-import frc.robot.subsystems.pivot.PivotConstants;
+import frc.robot.subsystems.elevator.ElevatorConstants;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.pivot.PivotSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.swerve.generated.TunerConstants;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import org.littletonrobotics.junction.LoggedRobot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
 
 public class RobotContainer extends LoggedRobot {
     private double MaxSpeed =
@@ -50,6 +54,12 @@ public class RobotContainer extends LoggedRobot {
 
     public final PivotSubsystem pivot = new PivotSubsystem();
 
+    public final ElevatorSubsystem elevator = new ElevatorSubsystem();
+
+    public final Vision vision = new Vision(
+                    drivetrain::addVisionMeasurement,
+                    new VisionIOPhotonVision(camera0Name, robotToCamera0));
+
     public RobotContainer() {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
@@ -62,15 +72,11 @@ public class RobotContainer extends LoggedRobot {
 
     private void configureBindings() {
         //        configureSwerveBindings();
-        joystick.povLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
-        joystick.povUp().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
-        joystick.povRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.BACK));
-        joystick.povUpLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_FORWARD));
-        joystick.povUpRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_BACK));
-        PivotConstants.PivotStates.JOYSTICK_LISTEN.setPositionSupplier(
-                () -> JoystickAngleUtil.getEncoderAngle(joystick.getLeftX(), joystick.getLeftY())
-        );
-        joystick.y().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.JOYSTICK_LISTEN));
+        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
+        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L1));
+        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
+        joystick.b().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L3));
+        joystick.povUp().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L4));
     }
 
     private void configureSwerveBindings() {
