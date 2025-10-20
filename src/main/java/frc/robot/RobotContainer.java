@@ -18,6 +18,7 @@ import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.swerve.generated.TunerConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.LoggedRobot;
 
 import static edu.wpi.first.units.Units.*;
@@ -56,11 +57,21 @@ public class RobotContainer extends LoggedRobot {
 
     public final ElevatorSubsystem elevator = new ElevatorSubsystem();
 
-    public final Vision vision = new Vision(
-                    drivetrain::addVisionMeasurement,
-                    new VisionIOPhotonVision(camera0Name, robotToCamera0));
+    public final Vision vision;
 
     public RobotContainer() {
+        if (Robot.isReal()) {
+            vision = new Vision(
+                    drivetrain::addVisionMeasurement,
+                    new VisionIOPhotonVision(camera0Name, robotToCamera0)
+            );
+        } else {
+            vision = new Vision(
+                    drivetrain::addVisionMeasurement,
+                    new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drivetrain::getPose)
+            );
+        }
+
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
