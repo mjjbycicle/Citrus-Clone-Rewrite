@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -50,8 +51,6 @@ public class RobotContainer extends LoggedRobot {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    /* Path follower */
-    private final SendableChooser<Command> autoChooser;
 
     public final PivotSubsystem pivot = new PivotSubsystem();
 
@@ -72,9 +71,6 @@ public class RobotContainer extends LoggedRobot {
             );
         }
 
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
-
         configureBindings();
 
         // Warmup PathPlanner to avoid Java pauses
@@ -82,12 +78,12 @@ public class RobotContainer extends LoggedRobot {
     }
 
     private void configureBindings() {
-        //        configureSwerveBindings();
-        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
-        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L1));
-        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
-        joystick.b().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L3));
-        joystick.povUp().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L4));
+                configureSwerveBindings();
+//        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
+//        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L1));
+//        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
+//        joystick.b().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L3));
+//        joystick.povUp().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L4));
     }
 
     private void configureSwerveBindings() {
@@ -146,6 +142,6 @@ public class RobotContainer extends LoggedRobot {
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
-        return autoChooser.getSelected();
+        return Commands.none();
     }
 }
