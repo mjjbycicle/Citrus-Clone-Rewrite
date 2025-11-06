@@ -23,8 +23,7 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.LoggedRobot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.vision.VisionConstants.camera0Name;
-import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 public class RobotContainer extends LoggedRobot {
     private double MaxSpeed =
@@ -67,7 +66,8 @@ public class RobotContainer extends LoggedRobot {
         } else {
             vision = new Vision(
                     drivetrain::addVisionMeasurement,
-                    new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drivetrain::getPose)
+                    new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drivetrain::getPose),
+                    new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drivetrain::getPose)
             );
         }
 
@@ -78,7 +78,7 @@ public class RobotContainer extends LoggedRobot {
     }
 
     private void configureBindings() {
-                configureSwerveBindings();
+        configureSwerveBindings();
 //        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
 //        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L1));
 //        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
