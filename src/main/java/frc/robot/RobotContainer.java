@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.elevator.ElevatorConstants;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import frc.robot.subsystems.pivot.PivotConstants;
 import frc.robot.subsystems.pivot.PivotSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 import frc.robot.subsystems.swerve.generated.TunerConstants;
@@ -79,11 +80,24 @@ public class RobotContainer extends LoggedRobot {
 
     private void configureBindings() {
         configureSwerveBindings();
-//        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
-//        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L1));
-//        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
-//        joystick.b().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L3));
-//        joystick.povUp().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L4));
+        configurePivotBindings();
+//        configureElevatorBindings();
+    }
+
+    private void configurePivotBindings() {
+        joystick.povLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
+        joystick.povUpLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_FORWARD));
+        joystick.povUp().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
+        joystick.povUpRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_BACK));
+        joystick.povRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.BACK));
+        pivot.setDefaultCommand(pivot.runCurrentState());
+    }
+
+    private void configureElevatorBindings() {
+        joystick.a().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.IDLE));
+        joystick.x().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L2));
+        joystick.y().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L3));
+        joystick.b().whileTrue(elevator.setThenRunState(ElevatorConstants.ElevatorStates.L4));
     }
 
     private void configureSwerveBindings() {
@@ -117,15 +131,6 @@ public class RobotContainer extends LoggedRobot {
                                 () ->
                                         point.withModuleDirection(
                                                 new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-
-        joystick
-                .pov(0)
-                .whileTrue(
-                        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
-        joystick
-                .pov(180)
-                .whileTrue(
-                        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
