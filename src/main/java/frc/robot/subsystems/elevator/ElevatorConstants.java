@@ -20,11 +20,11 @@ public class ElevatorConstants {
         public static final TunableNumber elevatorKG = new TunableNumber("Elevator/Elevator KG");
 
         static {
-            elevatorKP.setDefault(0.0);
+            elevatorKP.setDefault(8.0);
             elevatorKI.setDefault(0.0);
             elevatorKD.setDefault(0);
-            elevatorVelocity.setDefault(0);
-            elevatorAcceleration.setDefault(0);
+            elevatorVelocity.setDefault(20);
+            elevatorAcceleration.setDefault(20);
             elevatorKS.setDefault(0);
             elevatorKV.setDefault(0.0);
             elevatorKG.setDefault(0);
