@@ -14,12 +14,11 @@ import lib.TunableNumber;
 
 import static frc.robot.subsystems.elevator.ElevatorConstants.IDs;
 import static frc.robot.subsystems.elevator.ElevatorConstants.PIDs;
-import static frc.robot.subsystems.elevator.ElevatorConstants.ElevatorStates;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final TalonFX elevator;
     private final TalonFX follower;
-    private final double currentPosition;
+    private final double startPosition;
 
     private ElevatorConstants.ElevatorStates elevatorState = ElevatorConstants.ElevatorStates.IDLE;
 
@@ -52,11 +51,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevator.getConfigurator().apply(elevatorConfig);
         follower.setControl(new Follower(elevator.getDeviceID(), true));
 
-        currentPosition = elevator.getPosition().getValueAsDouble();
+        startPosition = elevator.getPosition().getValueAsDouble();
     }
 
     public Command runCurrentState() {
-        return this.runOnce(() -> elevator.setControl(new MotionMagicVoltage(elevatorState.position)));
+        return this.runOnce(() -> elevator.setControl(new MotionMagicVoltage(getRawPosition())));
     }
 
     public Command setState(ElevatorConstants.ElevatorStates newState) {
@@ -87,7 +86,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public double getPosition() {
-        return elevator.getPosition().getValueAsDouble() - currentPosition;
+        return elevator.getPosition().getValueAsDouble() - startPosition;
+    }
+
+    public double getRawPosition() {
+        return elevator.getPosition().getValueAsDouble();
     }
 
     public void refreshGains() {
