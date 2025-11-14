@@ -2,6 +2,7 @@ package frc.robot.subsystems.pivot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.swerve.generated.TunerConstants;
 import lib.TunableNumber;
 
 import java.util.function.DoubleSupplier;
@@ -21,6 +22,7 @@ public class PivotConstants {
         public static final TunableNumber pivotKS = new TunableNumber("Pivot/Pivot KS");
         public static final TunableNumber pivotKV = new TunableNumber("Pivot/Pivot KV");
         public static final TunableNumber pivotKG = new TunableNumber("Pivot/Pivot KG");
+        public static final TunableNumber pivotTolerance = new TunableNumber("Pivot/Pivot Tolerance");
 
         static {
             pivotKP.setDefault(22);
@@ -31,6 +33,7 @@ public class PivotConstants {
             pivotKS.setDefault(0.01);
             pivotKV.setDefault(0.0);
             pivotKG.setDefault(-0.01);
+            pivotTolerance.setDefault(1.0);
         }
     }
 

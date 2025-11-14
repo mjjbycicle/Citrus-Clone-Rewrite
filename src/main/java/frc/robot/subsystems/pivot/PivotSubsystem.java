@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -71,6 +72,7 @@ public class PivotSubsystem extends SubsystemBase {
                             SmartDashboard.putNumber("Pivot PID Output", pidOutput);
                             pivot.set(pidOutput);
                         })
+                .until(() -> MathUtil.isNear(getGoal(), getEncoderPosition(), PIDs.pivotTolerance.getAsDouble()))
                 .finallyDo(
                         () -> {
                             pivot.set(0);

@@ -85,11 +85,11 @@ public class RobotContainer extends LoggedRobot {
     }
 
     private void configurePivotBindings() {
-        joystick.povLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
-        joystick.povUpLeft().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_FORWARD));
-        joystick.povUp().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
-        joystick.povUpRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_BACK));
-        joystick.povRight().whileTrue(pivot.setThenRunState(PivotConstants.PivotStates.BACK));
+        joystick.povLeft().onTrue(pivot.setThenRunState(PivotConstants.PivotStates.IDLE));
+        joystick.povUpLeft().onTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_FORWARD));
+        joystick.povUp().onTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP));
+        joystick.povUpRight().onTrue(pivot.setThenRunState(PivotConstants.PivotStates.UP_BACK));
+        joystick.povRight().onTrue(pivot.setThenRunState(PivotConstants.PivotStates.BACK));
         pivot.setDefaultCommand(pivot.runCurrentState());
     }
 
