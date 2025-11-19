@@ -80,7 +80,7 @@ public class RobotContainer extends LoggedRobot {
 
     private void configureBindings() {
         configureSwerveBindings();
-        configurePivotBindings();
+//        configurePivotBindings();
 //        configureElevatorBindings();
     }
 
@@ -113,7 +113,7 @@ public class RobotContainer extends LoggedRobot {
                                         .withVelocityY(
                                                 -joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                                         .withRotationalRate(
-                                                joystick.getRightX()
+                                                -joystick.getRightX()
                                                         * MaxAngularRate) // Drive counterclockwise with negative X (left)
                 ));
 
